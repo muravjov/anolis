@@ -161,12 +161,44 @@ It should contain a an object with a 'url' property (whose value ends with a '#'
                      not element.getparent().tag in instance_not_in_stack_with:
                     raise SyntaxError("Term not defined: %s, %s." % (term, element))
 
+    def try_get_topic_id(self, element):
+        """Repeats logic as the function GetTopicIdentifier() does
+
+        from https://github.com/whatwg/wattsi
+
+        Basically we want to grasp id not only from <dfn/> but also
+        from its single child, e.g.:
+        <dfn><code data-x="that id">this</code></dfn>
+        """
+
+        if element.get("data-anolis-xref") is not None:
+            return element.get("data-anolis-xref")
+
+        if element.get("data-x") is not None:
+            return element.get("data-x")
+
+        children = element.getchildren()
+        if len(children) != 1:
+            return None
+
+        child = children[0]
+
+        # lxml keeps text nodes on the element's attributes .text (first child)
+        # and .tail (next sibling), and we make sure we have only one child
+        # and it is an element
+        if element.text or child.tail:
+            return None
+
+        if isinstance(child, etree.ElementBase):
+            return self.try_get_topic_id(child)
+
+        return None
+
     def getTerm(self, element, w3c_compat=False,
                 w3c_compat_xref_normalization=False, **kwargs):
-        if element.get("data-anolis-xref") is not None:
-            term = element.get("data-anolis-xref")
-        elif element.get("data-x") is not None:
-            term = element.get("data-x")
+        topic_id = self.try_get_topic_id(element)
+        if topic_id is not None:
+            term = topic_id
         elif element.get("title") is not None:
             term = element.get("title")
         else:
