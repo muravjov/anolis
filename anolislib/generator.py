@@ -23,7 +23,7 @@ from __future__ import unicode_literals
 
 import html5lib
 from html5lib import treebuilders, treewalkers
-from html5lib.serializer import htmlserializer
+from html5lib import serializer as htmlserializer
 
 import lxml.html
 from lxml import etree
@@ -36,10 +36,10 @@ def process(tree, processes=["sub", "toc", "xref"], **kwargs):
     for process in processes:
         try:
             process_module = getattr(__import__('processes', globals(),
-                                                locals(), [str(process)], -1),
+                                                locals(), [str(process)], 1),
                                     process)
         except AttributeError:
-            process_module = __import__(process, globals(), locals(), [], -1)
+            process_module = __import__(process, globals(), locals(), [], 1)
 
         getattr(process_module, process)(tree, **kwargs)
 
