@@ -101,7 +101,7 @@ def toString(tree, output_encoding="utf-8", serializer="html5lib", **kwargs):
         rendered = etree.tostring(tree, encoding=output_encoding)
     # Serialize to HTML using lxml.html
     elif serializer == "lxml.html":
-        rendered = lxml.html.tostring(tree, encoding=output_encoding)
+        rendered = etree.tostring(tree, method="html", encoding=output_encoding)
     # Serialize to HTML using html5lib
     else:
         walker = treewalkers.getTreeWalker("lxml")
